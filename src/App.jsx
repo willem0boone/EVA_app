@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Settings from "./components/Settings.jsx";
 import Main from "./components/Main.jsx";
 import Summary from "./components/Summary.jsx";
+import CreateGrid from "./components/CreateGrid.jsx"; // Make sure this exists
 
 export default function App() {
   const [page, setPage] = useState("main");
@@ -48,7 +49,7 @@ export default function App() {
     }
   }, [pyodide, pyCode]);
 
-  // Save config changes to localStorage for persistence (optional)
+  // Save config changes to localStorage for persistence
   useEffect(() => {
     if (config) {
       localStorage.setItem("ecotool-config", JSON.stringify(config));
@@ -58,6 +59,13 @@ export default function App() {
   if (!config) {
     return <div>Loading configuration...</div>;
   }
+
+  const pages = [
+    { key: "settings", label: "Settings" },
+    { key: "create-grid", label: "Create Grid" },
+    { key: "main", label: "Main" },
+    { key: "summary", label: "Summary" },
+  ];
 
   return (
     <div style={{ display: "flex", height: "100vh", fontFamily: "Arial, sans-serif" }}>
@@ -73,12 +81,12 @@ export default function App() {
       >
         <h2>Menu</h2>
         <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-          {["settings", "main", "summary"].map((p) => (
-            <li key={p} style={{ marginBottom: 6 }}>
+          {pages.map(({ key, label }) => (
+            <li key={key} style={{ marginBottom: 6 }}>
               <button
-                onClick={() => setPage(p)}
+                onClick={() => setPage(key)}
                 style={{
-                  background: page === p ? "#ddd" : "transparent",
+                  background: page === key ? "#ddd" : "transparent",
                   border: "none",
                   padding: "8px 12px",
                   width: "100%",
@@ -86,9 +94,9 @@ export default function App() {
                   cursor: "pointer",
                   borderRadius: 4,
                 }}
-                aria-current={page === p ? "page" : undefined}
+                aria-current={page === key ? "page" : undefined}
               >
-                {p.charAt(0).toUpperCase() + p.slice(1)}
+                {label}
               </button>
             </li>
           ))}
@@ -98,6 +106,7 @@ export default function App() {
       {/* Main content area */}
       <main style={{ flexGrow: 1, padding: 20, overflowY: "auto" }}>
         {page === "settings" && <Settings config={config} setConfig={setConfig} />}
+        {page === "create-grid" && <CreateGrid config={config} />}
         {page === "main" && <Main pyodide={pyodide} config={config} />}
         {page === "summary" && <Summary />}
       </main>
