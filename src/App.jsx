@@ -19,7 +19,13 @@ export default function App() {
 
   // Load pyodide
   useEffect(() => {
-    window.loadPyodide().then(setPyodide);
+    if (!window.loadPyodide) {
+      console.error("Pyodide is not loaded on window");
+      return;
+    }
+    window.loadPyodide()
+      .then(setPyodide)
+      .catch((e) => console.error("Failed to load Pyodide:", e));
   }, []);
 
   // Load python code file once pyodide is ready
@@ -44,7 +50,9 @@ export default function App() {
 
   // Save config changes to localStorage for persistence (optional)
   useEffect(() => {
-    if (config) localStorage.setItem("ecotool-config", JSON.stringify(config));
+    if (config) {
+      localStorage.setItem("ecotool-config", JSON.stringify(config));
+    }
   }, [config]);
 
   if (!config) {
@@ -53,11 +61,20 @@ export default function App() {
 
   return (
     <div style={{ display: "flex", height: "100vh", fontFamily: "Arial, sans-serif" }}>
-      <nav style={{ width: 180, borderRight: "1px solid #ccc", padding: 20 }}>
+      {/* Sidebar */}
+      <nav
+        style={{
+          width: 180,
+          borderRight: "1px solid #ccc",
+          padding: 20,
+          boxSizing: "border-box",
+          backgroundColor: "#f9f9f9",
+        }}
+      >
         <h2>Menu</h2>
-        <ul style={{ listStyle: "none", padding: 0 }}>
+        <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
           {["settings", "main", "summary"].map((p) => (
-            <li key={p}>
+            <li key={p} style={{ marginBottom: 6 }}>
               <button
                 onClick={() => setPage(p)}
                 style={{
@@ -67,8 +84,9 @@ export default function App() {
                   width: "100%",
                   textAlign: "left",
                   cursor: "pointer",
-                  marginBottom: 4,
+                  borderRadius: 4,
                 }}
+                aria-current={page === p ? "page" : undefined}
               >
                 {p.charAt(0).toUpperCase() + p.slice(1)}
               </button>
@@ -77,7 +95,8 @@ export default function App() {
         </ul>
       </nav>
 
-      <main style={{ flexGrow: 1, padding: 20 }}>
+      {/* Main content area */}
+      <main style={{ flexGrow: 1, padding: 20, overflowY: "auto" }}>
         {page === "settings" && <Settings config={config} setConfig={setConfig} />}
         {page === "main" && <Main pyodide={pyodide} config={config} />}
         {page === "summary" && <Summary />}
